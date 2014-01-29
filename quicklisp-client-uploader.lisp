@@ -6,7 +6,7 @@
 
 (defvar *format* "1")
 
-(defparameter *bucket* "alpha.quicklisp.org")
+(defparameter *bucket* "beta.quicklisp.org")
 
 (defun gzipped-url (url)
   (concatenate 'string url ".gz"))
@@ -231,3 +231,45 @@
             (publish-client-versions
              (write-available-client-versions "quicklisp-versions.sexp"))
             t))))))
+
+(defun guess-quicklisp-bootstrap-version (quicklisp-file)
+  (with-open-file (stream quicklisp-file)
+    (loop for line = (read-line stream nil)
+          while line do
+          (let ((pos (position-after-search "qlqs-info:*version* " line)))
+            (when pos
+              (return (values (read-from-string line t t :start pos)))))
+          finally (error "No version found in ~A" quicklisp-file))))
+
+(defun git-output (directory &rest args)
+  (commando:with-posix-cwd directory
+    (apply #'commando:run-output-lines "git" args)))
+
+(defun check-clean-git (directory)
+  (let ((lines (git-output directory "status" "-s")))
+    (when lines
+      (error "Directory ~A has dirty git status" directory))
+    t))
+
+(defun check-version-tag (directory version)
+  (let ((lines (git-output directory "tag" "-l" (format nil "version-~A"
+                                                        version))))
+    (unless lines
+      (error "No git tag for version-~A found in ~A" version directory))
+    t))
+
+(defun upload-quicklisp-lisp (quicklisp-bootstrap)
+  (check-clean-git quicklisp-bootstrap)
+  (let* ((quicklisp-file (merge-pathnames "quicklisp.lisp" quicklisp-bootstrap))
+         (version (guess-quicklisp-bootstrap-version quicklisp-file)))
+    (check-version-tag quicklisp-bootstrap version)
+    (let ((versioned-url (make-url *bucket* "quicklisp" version
+                                   "quicklisp.lisp"))
+          (top-url (format nil "http://~A/quicklisp.lisp" *bucket*)))
+      (put-to-s3-url quicklisp-file versioned-url
+                     :content-type "text/plain")
+      (put-to-s3-url quicklisp-file top-url
+                     :if-exists :overwrite
+                     :content-type "text/plain"
+                     :content-disposition "attachment")
+      (list versioned-url top-url))))
