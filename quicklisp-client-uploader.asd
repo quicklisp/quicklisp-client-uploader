@@ -11,4 +11,5 @@
                #:cl-ppcre)
   :components ((:file "package")
                (:file "s3")
+               (:file "git")
                (:file "quicklisp-client-uploader")))
