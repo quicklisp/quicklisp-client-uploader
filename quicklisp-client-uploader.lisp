@@ -189,6 +189,7 @@
                                                      quicklisp-client)))
         (subscription-url (make-url *bucket* "client" nil "quicklisp.sexp"))
         (client-tar-file (merge-pathnames "quicklisp.tar" quicklisp-client))
+        (client-tgz-file (merge-pathnames "quicklisp.tar.tgz" quicklisp-client))
         (setup-file (merge-pathnames "setup.lisp" quicklisp-client))
         (asdf-file (merge-pathnames "asdf.lisp" quicklisp-client))
         (existing-client-files (existing-client-files)))
@@ -230,7 +231,14 @@
                            :content-type "text/plain")
             (publish-client-versions
              (write-available-client-versions "quicklisp-versions.sexp"))
+            (publish-legacy-files :version client-version
+                                  :quicklisp-tar-file client-tar-file
+                                  :quicklisp-tgz-file client-tgz-file
+                                  :asdf-file asdf-file
+                                  :setup-file setup-file)
             t))))))
+
+;;; Uploading quicklisp.lisp
 
 (defun guess-quicklisp-bootstrap-version (quicklisp-file)
   (with-open-file (stream quicklisp-file)

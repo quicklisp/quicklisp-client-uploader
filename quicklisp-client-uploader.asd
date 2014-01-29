@@ -12,4 +12,5 @@
   :components ((:file "package")
                (:file "s3")
                (:file "git")
+               (:file "legacy")
                (:file "quicklisp-client-uploader")))
