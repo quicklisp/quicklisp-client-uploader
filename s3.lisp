@@ -29,7 +29,12 @@
          (let ((exists (s3-object-exists bucket key)))
            (cond (exists
                   (case if-exists
-                    (:error (error "Object already exists at ~A" url))
+                    (:error
+                     (restart-case
+                         (error "Object already exists at ~A" url)
+                       (overwrite ()
+                         :report "Overwrite it"
+                         (upload))))
                     ((nil) nil)))
                  (t
                   (upload)))))))))
