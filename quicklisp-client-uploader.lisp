@@ -8,6 +8,22 @@
 
 (defparameter *bucket* "beta.quicklisp.org")
 
+(defparameter *paths-to-invalidate*
+  '("/client/quicklisp.sexp"
+    "/quickstart/version.txt"
+    "/quickstart/quicklisp.tar"
+    "/quickstart/asdf.lisp"
+    "/quickstart/setup.lisp"))
+
+(defun distributions-for-bucket (bucket)
+  (loop for distribution in (ignore-errors (zs3:all-distributions))
+        when (member bucket (zs3:cnames distribution) :test 'equalp)
+        collect distribution))
+
+(defun invalidate-paths (bucket paths)
+  (loop for distribution in (distributions-for-bucket bucket)
+        collect (zs3:invalidate-paths distribution paths)))
+
 (defun gzipped-url (url)
   (concatenate 'string url ".gz"))
 
@@ -189,7 +205,7 @@
                                                      quicklisp-client)))
         (subscription-url (make-url *bucket* "client" nil "quicklisp.sexp"))
         (client-tar-file (merge-pathnames "quicklisp.tar" quicklisp-client))
-        (client-tgz-file (merge-pathnames "quicklisp.tar.tgz" quicklisp-client))
+        (client-tgz-file (merge-pathnames "quicklisp.tar.gz" quicklisp-client))
         (setup-file (merge-pathnames "setup.lisp" quicklisp-client))
         (asdf-file (merge-pathnames "asdf.lisp" quicklisp-client))
         (existing-client-files (existing-client-files)))
@@ -236,6 +252,7 @@
                                   :quicklisp-tgz-file client-tgz-file
                                   :asdf-file asdf-file
                                   :setup-file setup-file)
+            (invalidate-paths *bucket* *paths-to-invalidate*)
             t))))))
 
 ;;; Uploading quicklisp.lisp
