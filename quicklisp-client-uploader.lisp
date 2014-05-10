@@ -201,6 +201,7 @@
                  :content-type "text/plain"))
 
 (defun publish-client (quicklisp-client)
+  (check-clean-git quicklisp-client)
   (let ((client-version (first-line (merge-pathnames "quicklisp/version.txt"
                                                      quicklisp-client)))
         (subscription-url (make-url *bucket* "client" nil "quicklisp.sexp"))
@@ -209,6 +210,7 @@
         (setup-file (merge-pathnames "setup.lisp" quicklisp-client))
         (asdf-file (merge-pathnames "asdf.lisp" quicklisp-client))
         (existing-client-files (existing-client-files)))
+    (check-version-tag quicklisp-client client-version)
     (commando:with-posix-cwd quicklisp-client
       (commando:run "make" "clean")
       (commando:run "make"))
