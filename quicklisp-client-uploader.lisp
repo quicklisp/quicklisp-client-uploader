@@ -282,4 +282,5 @@
                      :if-exists :overwrite
                      :content-type "text/plain"
                      :content-disposition "attachment")
+      (invalidate-paths *bucket* '("/quicklisp.lisp"))
       (list versioned-url top-url))))
