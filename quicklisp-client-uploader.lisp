@@ -182,7 +182,7 @@
                                            #'string>
                                            :key 'car))
       (ppcre:register-groups-bind (version)
-          ("client/(.*?)/client-info.sexp" (name key))
+          ("client/(.*?)/client-info.sexp$" (name key))
         (push (cons version (format nil "http://~A/~A" *bucket* (name key)))
               result)))))
 
