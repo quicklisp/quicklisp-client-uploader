@@ -25,6 +25,12 @@ It also uploads gzipped versions of those pieces, too.
 It's not meant to be generally useful, and is not written in anything
 that I'd consider imitable or didactic style.
 
+To use, update & commit version.txt in the quicklisp client directory,
+make sure everything is clean via "make clean", remove or commit any
+untracked files, and use (publish-client
+"/path/to/quicklisp-client/"). Publishing quicklisp.lisp is a matter
+of (upload-quicklisp-lisp "/path/to/quicklisp-bootstrap/").
+
 Zach
 
 
