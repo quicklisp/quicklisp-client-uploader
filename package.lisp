@@ -2,6 +2,8 @@
 
 (defpackage #:quicklisp-client-uploader
   (:use #:cl)
+  (:export #:publish-client
+           #:upload-quicklisp-lisp)
   (:import-from #:zs3
                 #:all-keys
                 #:name
